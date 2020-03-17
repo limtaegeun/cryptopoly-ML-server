@@ -54,11 +54,15 @@ def predict():
         print(predict)
         return jsonify(predict.tolist())
 
+@app.route('/')
+def hello_world():
+    return 'Hello World!'
 
-if __name__ == '__main__':
-    print(("* Loading Keras model and Flask starting server..."
+
+print(("* Loading Keras model and Flask starting server..."
            "please wait until server has fully started"))
-    load_model()
-    load_scaler()
-    app.run(debug=True)
+load_model()
+load_scaler()
+if __name__ == '__main__':
+    app.run()
 
