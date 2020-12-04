@@ -61,6 +61,7 @@ def train():
 def predict():
     if request.method == "POST":
         jsonData = json.loads(request.form['data'])
+        print(jsonData)
         nparray = np.asarray(jsonData)
         prepared_data = prepare_data(nparray)
         reshaped_data = np.reshape(prepared_data, ( prepared_data.shape[0], prepared_data.shape[1],1))
