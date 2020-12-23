@@ -16,33 +16,32 @@ import joblib
 # import trainModel
 
 app = Flask(__name__)
-model = None
-scaler = None
+model = {}
+scaler = {}
 
-def load_model(dir):
+def load_model(dir, name):
     # load predict model
     global model
     json_file = open(dir + "/model.json", "r")
     loaded_model_json = json_file.read()
     json_file.close()
-    model = model_from_json(loaded_model_json)
+    model[name] = model_from_json(loaded_model_json)
 
-    model.load_weights(dir + "/model.h5")
-    print("Loaded model from disk")
-    print("model : " + dir)
+    model[name].load_weights(dir + "/model.h5")
+    print("Loaded model from disk : " + name)
 
-def load_scaler(dir):
+def load_scaler(dir, name):
     global scaler
-    scaler = joblib.load(dir + '/scaler.plk')
-    print("Loaded scaler from disk")
+    scaler[name] = joblib.load(dir + '/scaler.plk')
+    print("Loaded scaler from disk :" + name)
 
-def prepare_data(data_array):
+def prepare_data(data_array, modelName):
     global scaler
-    return scaler.transform(data_array)
+    return scaler[modelName].transform(data_array)
 
-def origin_data(data_array):
+def origin_data(data_array, modelName):
     global scaler
-    return scaler.inverse_transform(data_array)
+    return scaler[modelName].inverse_transform(data_array)
 
 @app.route("/train", methods=["GET"])
 def train():
@@ -61,17 +60,17 @@ def train():
 def predict():
     if request.method == "POST":
         jsonData = json.loads(request.form['data'])
+        modelName = json.loads(request.form['pair'])
         print(jsonData)
         nparray = np.asarray(jsonData)
-        prepared_data = prepare_data(nparray)
+        prepared_data = prepare_data(nparray, modelName)
         reshaped_data = np.reshape(prepared_data, ( prepared_data.shape[0], prepared_data.shape[1],1))
         print(reshaped_data)
-        predicted = model.predict(reshaped_data)
-        originData = origin_data(predicted)
+        predicted = model[modelName].predict(reshaped_data)
+        originData = origin_data(predicted, modelName)
+        print('predict : ' + modelName)
         print(originData)
         return jsonify(originData.tolist())
-
-
 
 
 @app.route('/')
@@ -81,8 +80,12 @@ def hello_world():
 
 print(("* Loading Keras model and Flask starting server..."
            "please wait until server has fully started"))
-load_model("USDT_BTC/86400")
-load_scaler("USDT_BTC/86400")
+load_model("models/USDT_BTC/86400", 'USDT_BTC')
+load_scaler("models/USDT_BTC/86400", 'USDT_BTC')
+load_model("models/USDT_ETH/86400", 'USDT_ETH')
+load_scaler("models/USDT_ETH/86400", 'USDT_ETH')
+load_model("models/USDT_XRP/86400", 'USDT_XRP')
+load_scaler("models/USDT_XRP/86400", 'USDT_XRP')
 if __name__ == '__main__':
     app.run()
 
