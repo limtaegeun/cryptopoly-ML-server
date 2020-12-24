@@ -60,13 +60,16 @@ def train():
 def predict():
     if request.method == "POST":
         jsonData = json.loads(request.form['data'])
-        modelName = json.loads(request.form['pair'])
+        modelName = request.form['pair']
         print(jsonData)
         nparray = np.asarray(jsonData)
+        print(nparray)
         prepared_data = prepare_data(nparray, modelName)
-        reshaped_data = np.reshape(prepared_data, ( prepared_data.shape[0], prepared_data.shape[1],1))
+        reshaped_data = np.reshape(prepared_data, ( 1, prepared_data.shape[0], prepared_data.shape[1]))
         print(reshaped_data)
         predicted = model[modelName].predict(reshaped_data)
+        print('before origin')
+        print(predicted)
         originData = origin_data(predicted, modelName)
         print('predict : ' + modelName)
         print(originData)
